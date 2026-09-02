@@ -7,7 +7,7 @@ set -euo pipefail
 HOST="${HOST:-your-api.example.com}"
 PORT="${PORT:-443}"
 PROTOCOL="${PROTOCOL:-https}"
-PATH_="${PATH_:-/api/jobs}"
+PATH_="/jsp/smartpass/tchinese/customer.jsp"
 AUTH="${AUTH:-}"
 
 THREADS="${1:-50}"
