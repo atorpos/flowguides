@@ -1,0 +1,34 @@
+{
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 60,
+    "errorCount" : 60,
+    "errorPct" : 100.0,
+    "meanResTime" : 42.28333333333333,
+    "medianResTime" : 28.0,
+    "minResTime" : 21.0,
+    "maxResTime" : 508.0,
+    "pct1ResTime" : 49.9,
+    "pct2ResTime" : 85.19999999999993,
+    "pct3ResTime" : 508.0,
+    "throughput" : 1.0183472224579506,
+    "receivedKBytesPerSec" : 0.6638815046928835,
+    "sentKBytesPerSec" : 0.4089466311800947
+  },
+  "POST Enqueue Job" : {
+    "transaction" : "POST Enqueue Job",
+    "sampleCount" : 60,
+    "errorCount" : 60,
+    "errorPct" : 100.0,
+    "meanResTime" : 42.28333333333333,
+    "medianResTime" : 28.0,
+    "minResTime" : 21.0,
+    "maxResTime" : 508.0,
+    "pct1ResTime" : 49.9,
+    "pct2ResTime" : 85.19999999999993,
+    "pct3ResTime" : 508.0,
+    "throughput" : 1.0183472224579506,
+    "receivedKBytesPerSec" : 0.6638815046928835,
+    "sentKBytesPerSec" : 0.4089466311800947
+  }
+}
