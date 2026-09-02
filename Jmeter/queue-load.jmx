@@ -1,7 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Test A - Queue-it redirect verification against the protected page.
+
+  What this proves (runbook 0.2 / 0.4): every un-tokened visitor hitting the
+  protected URL gets a 302 whose Location points at the Queue-it waiting room,
+  and the origin stays healthy while that happens. The redirect is deliberately
+  NOT followed, so Queue-it's edge is never loaded by this plan.
+
+  Every knob is a -J property. Run headless via run.sh / run.bat.
+
+    host          order.smartone.com
+    path          /jsp/smartpass/tchinese/customer.jsp
+    protocol      https          port    443
+    threads       concurrent virtual visitors
+    rampup        seconds to reach `threads`
+    loops         -1 = run until `duration`; set 1 for a smoke test
+    duration      seconds (scheduler end time)
+    rpm           target requests/minute across ALL threads
+    expectcode    regex the response code must match, whole-string
+                  (default 30[12]; the assertion is "Matches", so no ^ or $ needed)
+    expectlocation substring the response headers must contain
+                  (default queue-it.net; use .* to disable the check)
+    useragent     override the browser User-Agent
+
+  Smoke (runbook 5.2):  -Jthreads=1 -Jloops=1 -Jrpm=60
+  Pre-Queue-it smoke:   -Jexpectcode='200|30[12]' -Jexpectlocation='.*'
+
+  NOTE: this plan sends a browser-shaped GET. It carries no Authorization
+  header - a public storefront page has no bearer token, and an empty
+  `Authorization:` header is itself a WAF trigger.
+-->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Queue Ingest Load Test" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Queue-it Redirect Load Test (Test A)" enabled="true">
       <stringProp name="TestPlan.comments">All knobs are -J properties. Run headless. See run.sh.</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
@@ -17,65 +48,106 @@
         <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
           <collectionProp name="Arguments.arguments"/>
         </elementProp>
-        <stringProp name="HTTPSampler.domain">${__P(host,localhost)}</stringProp>
+        <stringProp name="HTTPSampler.domain">${__P(host,order.smartone.com)}</stringProp>
         <stringProp name="HTTPSampler.port">${__P(port,443)}</stringProp>
         <stringProp name="HTTPSampler.protocol">${__P(protocol,https)}</stringProp>
         <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
-        <stringProp name="HTTPSampler.connect_timeout">5000</stringProp>
-        <stringProp name="HTTPSampler.response_timeout">30000</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">${__P(connecttimeout,5000)}</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">${__P(responsetimeout,20000)}</stringProp>
         <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
       </ConfigTestElement>
       <hashTree/>
 
+      <!--
+        A real visitor sends a browser's header set. The previous version of this
+        plan sent Content-Type/Accept: application/json, no User-Agent and an
+        empty Authorization header - a textbook bot fingerprint that the edge
+        blocks with 403 before the request ever reaches the JSP.
+      -->
       <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
         <collectionProp name="HeaderManager.headers">
           <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">Content-Type</stringProp>
-            <stringProp name="Header.value">application/json</stringProp>
+            <stringProp name="Header.name">User-Agent</stringProp>
+            <stringProp name="Header.value">${__P(useragent,Mozilla/5.0 (Windows NT 10.0\; Win64\; x64) AppleWebKit/537.36 (KHTML\, like Gecko) Chrome/126.0.0.0 Safari/537.36)}</stringProp>
           </elementProp>
           <elementProp name="" elementType="Header">
             <stringProp name="Header.name">Accept</stringProp>
-            <stringProp name="Header.value">application/json</stringProp>
+            <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Language</stringProp>
+            <stringProp name="Header.value">zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7</stringProp>
+          </elementProp>
+          <!-- gzip/deflate only: JMeter does not decode brotli, and a br body
+               would break the header/body assertions below. -->
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Encoding</stringProp>
+            <stringProp name="Header.value">gzip, deflate</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Upgrade-Insecure-Requests</stringProp>
+            <stringProp name="Header.value">1</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Dest</stringProp>
+            <stringProp name="Header.value">document</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Mode</stringProp>
+            <stringProp name="Header.value">navigate</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Site</stringProp>
+            <stringProp name="Header.value">none</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-User</stringProp>
+            <stringProp name="Header.value">?1</stringProp>
           </elementProp>
           <elementProp name="" elementType="Header">
             <stringProp name="Header.name">Connection</stringProp>
             <stringProp name="Header.value">keep-alive</stringProp>
           </elementProp>
-          <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">Authorization</stringProp>
-            <stringProp name="Header.value">${__P(authHeader,)}</stringProp>
-          </elementProp>
         </collectionProp>
       </HeaderManager>
       <hashTree/>
 
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Injector Thread Group" enabled="true">
+      <!--
+        Cleared every iteration so each iteration is an un-tokened first-time
+        visitor. A leaking QueueITAccepted-* cookie is what turns the expected
+        302 into a 200 (runbook appendix A).
+      -->
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+        <collectionProp name="CookieManager.cookies"/>
+        <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+      </CookieManager>
+      <hashTree/>
+
+      <!-- Re-resolve each iteration so load spreads over every CDN edge IP
+           instead of pinning all threads to the first address resolved. -->
+      <DNSCacheManager guiclass="DNSCachePanel" testclass="DNSCacheManager" testname="DNS Cache Manager" enabled="true">
+        <collectionProp name="DNSCacheManager.servers"/>
+        <collectionProp name="DNSCacheManager.hosts"/>
+        <boolProp name="DNSCacheManager.clearEachIteration">true</boolProp>
+        <boolProp name="DNSCacheManager.isCustomResolver">false</boolProp>
+      </DNSCacheManager>
+      <hashTree/>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Visitor Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">-1</stringProp>
+          <stringProp name="LoopController.loops">${__P(loops,-1)}</stringProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(threads,50)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(rampup,60)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
         <stringProp name="ThreadGroup.delay">0</stringProp>
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
       </ThreadGroup>
       <hashTree>
-
-        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Payload Data" enabled="true">
-          <stringProp name="filename">${__P(csvfile,users.csv)}</stringProp>
-          <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="variableNames">userId,jobType,priority</stringProp>
-          <boolProp name="ignoreFirstLine">true</boolProp>
-          <stringProp name="delimiter">,</stringProp>
-          <boolProp name="quotedData">false</boolProp>
-          <boolProp name="recycle">true</boolProp>
-          <boolProp name="stopThread">false</boolProp>
-          <stringProp name="shareMode">shareMode.all</stringProp>
-        </CSVDataSet>
-        <hashTree/>
 
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Target Rate (req/min, all threads)" enabled="true">
           <intProp name="calcMode">2</intProp>
@@ -83,34 +155,41 @@
         </ConstantThroughputTimer>
         <hashTree/>
 
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST Enqueue Job" enabled="true">
-          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&quot;userId&quot;:&quot;${userId}&quot;,&quot;jobType&quot;:&quot;${jobType}&quot;,&quot;priority&quot;:${priority},&quot;requestId&quot;:&quot;${__UUID()}&quot;,&quot;submittedAt&quot;:${__time(,)}}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Protected Page" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.path">${__P(path,/api/jobs)}</stringProp>
-          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <stringProp name="HTTPSampler.path">${__P(path,/jsp/smartpass/tchinese/customer.jsp)}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <!-- Test A must NOT follow the redirect: the point is to prove the
+               302 exists without putting load on Queue-it's edge. -->
           <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <boolProp name="HTTPSampler.image_parser">false</boolProp>
+          <boolProp name="HTTPSampler.concurrentDwn">false</boolProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Accepted 2xx" enabled="true">
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status is a redirect" enabled="true">
             <collectionProp name="Asserion.test_strings">
-              <stringProp name="-1149498535">^2\d\d$</stringProp>
+              <stringProp name="expectcode">${__P(expectcode,30[12])}</stringProp>
             </collectionProp>
-            <stringProp name="Assertion.custom_message">Non-2xx from queue endpoint</stringProp>
+            <stringProp name="Assertion.custom_message">Expected a redirect to the waiting room. 403 = generator IP not allowlisted on the WAF/CDN. 200 = page not covered by a Queue-it trigger or a cookie leaked.</stringProp>
             <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
             <boolProp name="Assertion.assume_success">false</boolProp>
             <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Location points at the waiting room" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="expectlocation">${__P(expectlocation,queue-it.net)}</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message">Redirect Location does not contain the waiting-room domain.</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_headers</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>

@@ -10,12 +10,12 @@
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Normal Flow Group">
-        <intProp name="ThreadGroup.num_threads">10</intProp>
-        <intProp name="ThreadGroup.ramp_time">1</intProp>
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
-        <stringProp name="ThreadGroup.on_sample_error">stoptestnow</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,1)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,1)}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
-          <stringProp name="LoopController.loops">10</stringProp>
+          <stringProp name="LoopController.loops">${__P(loops,1)}</stringProp>
           <boolProp name="LoopController.continue_forever">false</boolProp>
         </elementProp>
       </ThreadGroup>
@@ -46,7 +46,7 @@
               <stringProp name="1537214">2000</stringProp>
               <stringProp name="19662712">NotInitiated</stringProp>
               <stringProp name="19662712">NotInitiated</stringProp>
-              <stringProp name="0"></stringProp>
+              <stringProp name="0">${__P(loadtestlink,)}</stringProp>
               <stringProp name="19662712">NotInitiated</stringProp>
               <stringProp name="19662712">NotInitiated</stringProp>
               <stringProp name="19662712">NotInitiated</stringProp>
@@ -64,23 +64,30 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="parameters"></stringProp>
-          <stringProp name="script">var link = vars.get(&apos;LOADTESTLINK&apos;);
-var customerId = link.match(/c=([^&amp;]+)/g)[0].replace(&apos;c=&apos;,&apos;&apos;);
-var eventId = link.match(/e=([^&amp;]+)/g)[0].replace(&apos;e=&apos;,&apos;&apos;);
-var questionMarkIndex = link.indexOf(&apos;?&apos;);
-var testDomain=link.substring(0,questionMarkIndex);
-testDomain=testDomain.replace(&apos;https://&apos;,&apos;&apos;);
-testDomain=testDomain.replace(&apos;http://&apos;,&apos;&apos;);
-testDomain=testDomain.replace(&apos;/&apos;,&apos;&apos;);
-vars.put(&apos;QUEUEITDOMAIN&apos;, testDomain);
-vars.put(&apos;EVENTID&apos;, eventId);
-vars.put(&apos;CUSTOMERID&apos;, customerId);
-var protocalIndex = link.indexOf(&apos;://&apos;);
-var protocol=link.substring(0,protocalIndex);
-var port= protocol === &quot;http&quot; ? 80 : 443;
-vars.put(&apos;PORT&apos;, port);
-vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
-          <stringProp name="scriptLanguage">javascript</stringProp>
+          <stringProp name="script">// Groovy, not JavaScript: Nashorn was removed in Java 15, so a
+// scriptLanguage of &quot;javascript&quot; throws on the Java 17 this runs on.
+def link = vars.get(&apos;LOADTESTLINK&apos;)
+if (link == null || link.trim().isEmpty()) {
+    throw new IllegalStateException(
+        &apos;LOADTESTLINK is empty. Pass -Jloadtestlink=&quot;https://CUSTOMERID.queue-it.net?c=CUSTOMERID&amp;e=WAITINGROOMID&quot; &apos; +
+        &apos;(take it from the Queue-it Load Test details page). Test B cannot run without it.&apos;)
+}
+def cm = (link =~ /[?&amp;]c=([^&amp;]+)/)
+def em = (link =~ /[?&amp;]e=([^&amp;]+)/)
+if (!cm.find() || !em.find()) {
+    throw new IllegalStateException(&apos;LOADTESTLINK must contain both c= and e= parameters, got: &apos; + link)
+}
+def q = link.indexOf(&apos;?&apos;)
+def base = (q &gt;= 0 ? link.substring(0, q) : link)
+def proto = base.startsWith(&apos;http://&apos;) ? &apos;http&apos; : &apos;https&apos;
+def host = base.replaceFirst(/^https?:\/\//, &apos;&apos;).replaceAll(/\/.*$/, &apos;&apos;)
+
+vars.put(&apos;QUEUEITDOMAIN&apos;, host)
+vars.put(&apos;CUSTOMERID&apos;, cm.group(1))
+vars.put(&apos;EVENTID&apos;, em.group(1))
+vars.put(&apos;PROTOCOL&apos;, proto)
+vars.put(&apos;PORT&apos;, proto == &apos;http&apos; ? &apos;80&apos; : &apos;443&apos;)</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
         <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults">
@@ -108,20 +115,58 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
-          <stringProp name="HTTPSampler.domain">order.smartone.com/jsp/smartpass/tchinese/customer.jsp</stringProp>
-          <stringProp name="HTTPSampler.port">443</stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+        <!--
+          Hit the protected page to trigger the waiting room.
+          The domain field takes a HOST ONLY. Putting the whole URL here is what
+          produced "java.net.MalformedURLException: Illegal character found in
+          host: '/'" on every sample - host and path are separate fields.
+          These values override the queue-it.net HTTP Request Defaults above.
+        -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Target Site - Protected Page">
+          <stringProp name="HTTPSampler.domain">${__P(targethost,order.smartone.com)}</stringProp>
+          <stringProp name="HTTPSampler.path">${__P(targetpath,/jsp/smartpass/tchinese/customer.jsp)}</stringProp>
+          <stringProp name="HTTPSampler.port">${__P(targetport,443)}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${__P(targetprotocol,https)}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <boolProp name="HTTPSampler.image_parser">false</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
         </HTTPSamplerProxy>
-        <hashTree/>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <hashTree>
+          <!-- Browser headers: the target site sits behind a WAF/CDN that 403s
+               requests with no User-Agent and a non-HTML Accept. -->
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Browser Headers">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">${__P(useragent,Mozilla/5.0 (Windows NT 10.0\; Win64\; x64) AppleWebKit/537.36 (KHTML\, like Gecko) Chrome/126.0.0.0 Safari/537.36)}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip, deflate</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Upgrade-Insecure-Requests</stringProp>
+                <stringProp name="Header.value">1</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -172,13 +217,12 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
           </HTTPSamplerProxy>
           <hashTree>
             <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract Environment State" enabled="true">
-              <stringProp name="RegexExtractor.useHeaders">unescaped</stringProp>
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
               <stringProp name="RegexExtractor.refname">LOADTESTISREADY</stringProp>
-              <stringProp name="RegexExtractor.regex">true</stringProp>
+              <stringProp name="RegexExtractor.regex">(true|false)</stringProp>
               <stringProp name="RegexExtractor.template">$1$</stringProp>
               <stringProp name="RegexExtractor.default">false</stringProp>
               <stringProp name="RegexExtractor.match_number">1</stringProp>
-              <stringProp name="Scope.variable">queueId</stringProp>
               <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
             </RegexExtractor>
             <hashTree/>
@@ -231,7 +275,6 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
             <stringProp name="RegexExtractor.template">$1$</stringProp>
             <stringProp name="RegexExtractor.default">NotFound</stringProp>
             <stringProp name="RegexExtractor.match_number">1</stringProp>
-            <stringProp name="Scope.variable">queueId</stringProp>
             <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
           </RegexExtractor>
           <hashTree/>
@@ -347,7 +390,6 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
               <stringProp name="RegexExtractor.template">$1$</stringProp>
               <stringProp name="RegexExtractor.default">NotFound</stringProp>
               <stringProp name="RegexExtractor.match_number">1</stringProp>
-              <stringProp name="Scope.variable">queueId</stringProp>
               <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
             </RegexExtractor>
             <hashTree/>
@@ -392,7 +434,7 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
           </IfController>
           <hashTree>
             <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While not redirected" enabled="true">
-              <stringProp name="WhileController.condition">${__javaScript(&quot;${REDIRECTURL}&quot;==&quot;NotInitiated&quot;)}</stringProp>
+              <stringProp name="WhileController.condition">${__jexl3("${REDIRECTURL}" == "NotInitiated")}</stringProp>
             </WhileController>
             <hashTree>
               <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait for next status update" enabled="true">
@@ -504,7 +546,7 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
           </DebugSampler>
           <hashTree/>
         </hashTree>
-        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="false">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -534,7 +576,7 @@ vars.put(&apos;PROTOCOL&apos;, protocol);</stringProp>
               <threadCounts>true</threadCounts>
             </value>
           </objProp>
-          <stringProp name="filename">c:\testrunner\results\testsummery.xml</stringProp>
+          <stringProp name="filename"></stringProp>
         </ResultCollector>
         <hashTree/>
         <ResultCollector guiclass="GraphVisualizer" testclass="ResultCollector" testname="Graph Results" enabled="false">
