@@ -1,0 +1,2 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1788357710984,54,GET Protected Page,200,OK,Visitor Thread Group 1-1,text,true,,840,520,1,1,http://127.0.0.1:8080/,48,0,36

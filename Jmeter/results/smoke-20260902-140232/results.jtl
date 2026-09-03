@@ -1,0 +1,2 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1788357755921,679,GET Protected Page,403,Forbidden,Visitor Thread Group 1-1,text,false,Expected a redirect to the waiting room. 403 = generator IP not allowlisted on the WAF/CDN. 200 = page not covered by a Queue-it trigger or a cookie leaked.,668,559,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,672,0,652

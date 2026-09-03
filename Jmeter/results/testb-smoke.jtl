@@ -1,0 +1,17 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1788361797125,442,Target Site - Protected Page,403,Forbidden,Normal Flow Group 1-1,text,false,,668,493,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,433,0,408
+1788361797574,793,Environment State,200,OK,Normal Flow Group 1-1,text,true,,411,213,1,1,https://t-landing20240816-smartonehk.queue-it.net/status/isloadtest,792,0,536
+1788361798540,7,Loadtest is not ready,200,OK,Normal Flow Group 1-1,text,true,,788,0,1,1,null,0,0,0
+1788362158578,503,Target Site - Protected Page,403,Forbidden,Normal Flow Group 1-1,text,false,,668,493,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,494,0,466
+1788362159098,828,Environment State,200,OK,Normal Flow Group 1-1,text,true,,411,213,1,1,https://t-landing20240816-smartonehk.queue-it.net/status/isloadtest,827,0,568
+1788362160114,7,Loadtest is not ready,200,OK,Normal Flow Group 1-1,text,true,,788,0,1,1,null,0,0,0
+1788362191825,448,Target Site - Protected Page,403,Forbidden,Normal Flow Group 1-1,text,false,,668,493,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,441,0,420
+1788362192286,794,Environment State,200,OK,Normal Flow Group 1-1,text,true,,411,213,1,1,https://t-landing20240816-smartonehk.queue-it.net/status/isloadtest,794,0,536
+1788362193236,9,Loadtest is not ready,200,OK,Normal Flow Group 1-1,text,true,,788,0,1,1,null,0,0,0
+1788362283384,838,Target Site - Protected Page,403,Forbidden,Normal Flow Group 1-1,text,false,,668,493,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,824,0,787
+1788362284246,804,Environment State,200,OK,Normal Flow Group 1-1,text,true,,411,213,1,1,https://t-landing20240816-smartonehk.queue-it.net/status/isloadtest,803,0,543
+1788362285322,7,Loadtest is not ready,200,OK,Normal Flow Group 1-1,text,true,,788,0,1,1,null,0,0,0
+1788362416097,535,Target Site - Protected Page,403,Forbidden,Normal Flow Group 1-1,text,false,,668,493,1,1,https://order.smartone.com/jsp/smartpass/tchinese/customer.jsp,525,0,499
+1788362416646,240,Environment State,200,OK,Normal Flow Group 1-1,text,true,,495,213,1,1,https://t-landing20240816-smartonehk.queue-it.net/status/isloadtest,239,0,174
+1788362417049,884,Initial request,302,Found,Normal Flow Group 1-1,,true,,1006,0,1,1,https://t-landing20240816-smartonehk.queue-it.net/?c=smartonehk&e=landing20240816,883,0,0
+1788362430967,13,Safetynet,200,OK,Normal Flow Group 1-1,text,true,,15528,0,1,1,null,0,0,0

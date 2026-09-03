@@ -1,0 +1,71 @@
+2026-09-02 15:20:13,183 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-09-02 15:20:13,212 INFO o.a.j.JMeter: Loading user properties from: /opt/apache-jmeter-5.6.3/bin/user.properties
+2026-09-02 15:20:13,213 INFO o.a.j.JMeter: Loading system properties from: /opt/apache-jmeter-5.6.3/bin/system.properties
+2026-09-02 15:20:13,213 INFO o.a.j.JMeter: Setting JMeter property: loadtestlink=https://t-landing20240816-smartonehk.queue-it.net?c=smartonehk&e=landing20240816
+2026-09-02 15:20:13,214 INFO o.a.j.JMeter: Setting JMeter property: targethost=order.smartone.com
+2026-09-02 15:20:13,214 INFO o.a.j.JMeter: Setting JMeter property: targetpath=/jsp/smartpass/tchinese/customer.jsp
+2026-09-02 15:20:13,214 INFO o.a.j.JMeter: Setting JMeter property: threads=1
+2026-09-02 15:20:13,214 INFO o.a.j.JMeter: Setting JMeter property: loops=1
+2026-09-02 15:20:13,223 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-09-02 15:20:13,223 INFO o.a.j.JMeter: Version 5.6.3
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: java.version=17.0.20
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: os.name=Linux
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: os.arch=amd64
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: os.version=7.0.0-1011-aws
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: java.awt.headless=true
+2026-09-02 15:20:13,224 INFO o.a.j.JMeter: Max memory     =1073741824
+2026-09-02 15:20:13,225 INFO o.a.j.JMeter: Available Processors =2
+2026-09-02 15:20:13,240 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-09-02 15:20:13,240 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-09-02 15:20:13,240 INFO o.a.j.JMeter: JMeterHome=/opt/apache-jmeter-5.6.3
+2026-09-02 15:20:13,240 INFO o.a.j.JMeter: user.dir  =/root/flowguides/Jmeter
+2026-09-02 15:20:13,241 INFO o.a.j.JMeter: PWD       =/root/flowguides/Jmeter
+2026-09-02 15:20:13,242 INFO o.a.j.JMeter: IP: 172.31.14.98 Name: ip-172-31-14-98 FullName: ip-172-31-14-98.ap-east-1.compute.internal
+2026-09-02 15:20:13,262 INFO o.a.j.s.FileServer: Default base='/root/flowguides/Jmeter'
+2026-09-02 15:20:13,265 INFO o.a.j.s.FileServer: Set new base='/root/flowguides/Jmeter'
+2026-09-02 15:20:13,662 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-09-02 15:20:13,733 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2026-09-02 15:20:13,738 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2026-09-02 15:20:13,745 INFO o.a.j.s.SaveService: Loading file: Fullflow load test V2.1.5.jmx
+2026-09-02 15:20:13,851 INFO o.a.j.p.h.c.CookieManager: Settings: Delete null: true Check: true Allow variable: true Save: false Prefix: COOKIE_
+2026-09-02 15:20:13,885 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-09-02 15:20:13,885 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-09-02 15:20:13,885 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-09-02 15:20:13,885 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-09-02 15:20:13,886 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-09-02 15:20:13,887 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-09-02 15:20:14,052 INFO o.a.j.JMeter: Creating summariser <summary>
+2026-09-02 15:20:14,080 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2026-09-02 15:20:14,081 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-09-02 15:20:14,081 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-09-02 15:20:14,096 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2026-09-02 15:20:14,096 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2026-09-02 15:20:14,190 INFO o.a.j.r.ClassFinder: Will scan jar /opt/apache-jmeter-5.6.3/lib/ext/jmeter-plugins-manager-1.10.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-09-02 15:20:14,761 INFO o.a.j.JMeter: Running test (1788362414761)
+2026-09-02 15:20:14,812 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : Normal Flow Group
+2026-09-02 15:20:14,813 INFO o.a.j.e.StandardJMeterEngine: Starting 1 threads for group Normal Flow Group.
+2026-09-02 15:20:14,813 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-09-02 15:20:14,813 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=1 ramp-up=1 delayedStart=false
+2026-09-02 15:20:14,826 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2026-09-02 15:20:14,827 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2026-09-02 15:20:14,831 INFO o.a.j.t.JMeterThread: Thread started: Normal Flow Group 1-1
+2026-09-02 15:20:16,032 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = ip-172-31-14-98
+2026-09-02 15:20:16,039 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2026-09-02 15:20:16,041 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2026-09-02 15:20:16,041 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2026-09-02 15:20:16,041 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2026-09-02 15:20:16,041 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2026-09-02 15:20:16,235 INFO o.a.j.p.h.s.h.LazyLayeredConnectionSocketFactory: Setting up HTTPS TrustAll Socket Factory
+2026-09-02 15:20:16,242 INFO o.a.j.u.JsseSSLManager: Using default SSL protocol: TLS
+2026-09-02 15:20:16,242 INFO o.a.j.u.JsseSSLManager: SSL session context: per-thread
+2026-09-02 15:20:16,341 INFO o.a.j.u.SSLManager: JmeterKeyStore Location:  type JKS
+2026-09-02 15:20:16,346 INFO o.a.j.u.SSLManager: KeyStore created OK
+2026-09-02 15:20:16,346 WARN o.a.j.u.SSLManager: Keystore file not found, loading empty keystore
+2026-09-02 15:20:17,049 INFO o.a.j.p.h.s.HTTPJavaImpl: Maximum connection retries = 0
+2026-09-02 15:20:30,984 INFO o.a.j.r.Summariser: summary +      4 in 00:00:16 =    0.2/s Avg:   418 Min:    13 Max:   884 Err:     1 (25.00%) Active: 1 Started: 1 Finished: 0
+2026-09-02 15:20:30,992 INFO o.a.j.t.JMeterThread: Thread is done: Normal Flow Group 1-1
+2026-09-02 15:20:30,994 INFO o.a.j.t.JMeterThread: Thread finished: Normal Flow Group 1-1
+2026-09-02 15:20:30,997 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2026-09-02 15:20:31,004 INFO o.a.j.r.Summariser: summary =      4 in 00:00:16 =    0.2/s Avg:   418 Min:    13 Max:   884 Err:     1 (25.00%)
