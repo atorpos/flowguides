@@ -116,55 +116,69 @@ vars.put(&apos;PORT&apos;, proto == &apos;http&apos; ? &apos;80&apos; : &apos;44
         </HeaderManager>
         <hashTree/>
         <!--
-          Hit the protected page to trigger the waiting room.
-          The domain field takes a HOST ONLY. Putting the whole URL here is what
-          produced "java.net.MalformedURLException: Illegal character found in
-          host: '/'" on every sample - host and path are separate fields.
-          These values override the queue-it.net HTTP Request Defaults above.
+          Skippable with -Jhittarget=false. This sampler is the only thing in the
+          plan that touches the customer's own site; every other request goes to
+          queue-it.net. While the target's WAF is blocking the generator, hitting
+          it once per iteration per thread adds thousands of requests that cannot
+          succeed and only risk the source IP being escalated further.
         -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Target Site - Protected Page">
-          <stringProp name="HTTPSampler.domain">${__P(targethost,order.smartone.com)}</stringProp>
-          <stringProp name="HTTPSampler.path">${__P(targetpath,/jsp/smartpass/tchinese/customer.jsp)}</stringProp>
-          <stringProp name="HTTPSampler.port">${__P(targetport,443)}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${__P(targetprotocol,https)}</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <boolProp name="HTTPSampler.image_parser">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Hit Target Site">
+          <stringProp name="IfController.condition">${__P(hittarget,true)}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+          <boolProp name="IfController.useExpression">true</boolProp>
+        </IfController>
         <hashTree>
-          <!-- Browser headers: the target site sits behind a WAF/CDN that 403s
-               requests with no User-Agent and a non-HTML Accept. -->
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Browser Headers">
-            <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">User-Agent</stringProp>
-                <stringProp name="Header.value">${__P(useragent,Mozilla/5.0 (Windows NT 10.0\; Win64\; x64) AppleWebKit/537.36 (KHTML\, like Gecko) Chrome/126.0.0.0 Safari/537.36)}</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Accept</stringProp>
-                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Accept-Language</stringProp>
-                <stringProp name="Header.value">zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Accept-Encoding</stringProp>
-                <stringProp name="Header.value">gzip, deflate</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Upgrade-Insecure-Requests</stringProp>
-                <stringProp name="Header.value">1</stringProp>
-              </elementProp>
-            </collectionProp>
-          </HeaderManager>
-          <hashTree/>
+          <!--
+            Hit the protected page to trigger the waiting room.
+            The domain field takes a HOST ONLY. Putting the whole URL here is what
+            produced "java.net.MalformedURLException: Illegal character found in
+            host: '/'" on every sample - host and path are separate fields.
+            These values override the queue-it.net HTTP Request Defaults above.
+          -->
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Target Site - Protected Page">
+            <stringProp name="HTTPSampler.domain">${__P(targethost,order.smartone.com)}</stringProp>
+            <stringProp name="HTTPSampler.path">${__P(targetpath,/jsp/smartpass/tchinese/customer.jsp)}</stringProp>
+            <stringProp name="HTTPSampler.port">${__P(targetport,443)}</stringProp>
+            <stringProp name="HTTPSampler.protocol">${__P(targetprotocol,https)}</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <boolProp name="HTTPSampler.image_parser">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <!-- Browser headers: the target site sits behind a WAF/CDN that 403s
+                 requests with no User-Agent and a non-HTML Accept. -->
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Browser Headers">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">User-Agent</stringProp>
+                  <stringProp name="Header.value">${__P(useragent,Mozilla/5.0 (Windows NT 10.0\; Win64\; x64) AppleWebKit/537.36 (KHTML\, like Gecko) Chrome/126.0.0.0 Safari/537.36)}</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Accept</stringProp>
+                  <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Accept-Language</stringProp>
+                  <stringProp name="Header.value">zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Accept-Encoding</stringProp>
+                  <stringProp name="Header.value">gzip, deflate</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Upgrade-Insecure-Requests</stringProp>
+                  <stringProp name="Header.value">1</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+          </hashTree>
         </hashTree>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
