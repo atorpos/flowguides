@@ -1,0 +1,37 @@
+2026-09-10 03:11:44,472 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-09-10 03:11:44,488 INFO o.a.j.JMeter: Loading user properties from: /opt/apache-jmeter-5.6.3/bin/user.properties
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Loading system properties from: /opt/apache-jmeter-5.6.3/bin/system.properties
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: loadtestlink=https://order.smartone.com/jsp/smartpass/english/customer.jsp?tm=20260911_0859
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: hittarget=true
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: rate=100
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: threads=20
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: rampup=30
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: duration=600
+2026-09-10 03:11:44,489 INFO o.a.j.JMeter: Setting JMeter property: loops=-1
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: Version 5.6.3
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: java.version=17.0.20
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: os.name=Linux
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: os.arch=amd64
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: os.version=6.17.0-1017-aws
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-09-10 03:11:44,496 INFO o.a.j.JMeter: java.awt.headless=true
+2026-09-10 03:11:44,497 INFO o.a.j.JMeter: Max memory     =2147483648
+2026-09-10 03:11:44,497 INFO o.a.j.JMeter: Available Processors =4
+2026-09-10 03:11:44,504 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-09-10 03:11:44,505 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-09-10 03:11:44,505 INFO o.a.j.JMeter: JMeterHome=/opt/apache-jmeter-5.6.3
+2026-09-10 03:11:44,505 INFO o.a.j.JMeter: user.dir  =/root/flowguides
+2026-09-10 03:11:44,505 INFO o.a.j.JMeter: PWD       =/root/flowguides
+2026-09-10 03:11:44,507 INFO o.a.j.JMeter: IP: 172.31.7.219 Name: ip-172-31-7-219 FullName: ip-172-31-7-219.ap-east-1.compute.internal
+2026-09-10 03:11:44,515 ERROR o.a.j.JMeter: An error occurred: 
+org.apache.jmeter.report.config.ConfigurationException: The file /root/flowguides/livetest.jmx doesn't exist or can't be opened
+	at org.apache.jmeter.JMeter.runNonGui(JMeter.java:950) ~[ApacheJMeter_core.jar:5.6.3]
+	at org.apache.jmeter.JMeter.startNonGui(JMeter.java:940) ~[ApacheJMeter_core.jar:5.6.3]
+	at org.apache.jmeter.JMeter.start(JMeter.java:508) [ApacheJMeter_core.jar:5.6.3]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[?:?]
+	at org.apache.jmeter.NewDriver.main(NewDriver.java:259) [ApacheJMeter.jar:5.6.3]
