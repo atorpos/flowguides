@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Stress test - direct origin capacity check against the stress-test page.
+
+  Purpose: drive a fixed request rate (default 60 req/s = 3600 req/min) at
+  order.smartone.com/jsp/smartpass/tchinese/stress_test.jsp and report latency,
+  error rate and the response-code breakdown. This measures YOUR service's
+  capacity at the origin (runbook 0.2 "test your capacity") - it is not the
+  Queue-it waiting-room journey (Test B).
+
+  Redirects are NOT followed by default. If stress_test.jsp is covered by a
+  Queue-it trigger it will answer 302 -> queue-it.net; not following it means
+  this plan never puts 3600 req/min on Queue-it's edge (runbook 0.2 / 0.5).
+  A 302 then shows up as an assertion failure, which tells you the endpoint is
+  queue-protected - set -Jexpectcode='200|30[12]' -Jfollow=false if that is
+  expected, or point the plan at the un-triggered origin.
+
+  Every knob is a -J property. Run headless via run-stress.sh / run-stress.bat.
+
+    host           order.smartone.com
+    path           /jsp/smartpass/tchinese/stress_test.jsp
+    protocol       https          port    443
+    threads        concurrent virtual users (>= rps x latency; 100 is ample for 60/s)
+    rampup         seconds to reach `threads`
+    loops          -1 = run until `duration`; set 1 for a smoke test
+    duration       seconds (scheduler end time); keep >= 180 (runbook 0.4)
+    rpm            target requests/minute across ALL threads (3600 = 60/s)
+    expectcode     regex the response code must match, whole-string
+                   (default 200; the assertion is "Matches", so no ^ or $ needed)
+    maxlatency     ms; samples slower than this are flagged as failures.
+                   0 (default) disables the latency ceiling.
+    follow         true|false follow redirects (default false - see note above)
+    useragent      override the browser User-Agent
+
+  Smoke first (runbook 5.2):  -Jthreads=1 -Jloops=1 -Jrpm=60
+  60 req/s for 5 min:         -Jthreads=100 -Jrpm=3600 -Jduration=300
+
+  NOTE: this plan sends a browser-shaped GET with no Authorization header - a
+  public storefront page has no bearer token, and an empty `Authorization:`
+  header is itself a WAF trigger.
+-->
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="stress_test.jsp Stress Test (60 req/s)" enabled="true">
+      <stringProp name="TestPlan.comments">All knobs are -J properties. Run headless. See run-stress.sh. Default rate is 60 req/s (rpm=3600).</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${__P(host,order.smartone.com)}</stringProp>
+        <stringProp name="HTTPSampler.port">${__P(port,443)}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${__P(protocol,https)}</stringProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">${__P(connecttimeout,5000)}</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">${__P(responsetimeout,20000)}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+
+      <!--
+        A real visitor sends a browser's header set. A JSON/no-User-Agent/empty
+        Authorization fingerprint is what the edge blocks with 403 before the
+        request ever reaches the JSP.
+      -->
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">User-Agent</stringProp>
+            <stringProp name="Header.value">${__P(useragent,Mozilla/5.0 (Windows NT 10.0\; Win64\; x64) AppleWebKit/537.36 (KHTML\, like Gecko) Chrome/126.0.0.0 Safari/537.36)}</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept</stringProp>
+            <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Language</stringProp>
+            <stringProp name="Header.value">zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7</stringProp>
+          </elementProp>
+          <!-- gzip/deflate only: JMeter does not decode brotli. -->
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Encoding</stringProp>
+            <stringProp name="Header.value">gzip, deflate</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Upgrade-Insecure-Requests</stringProp>
+            <stringProp name="Header.value">1</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Dest</stringProp>
+            <stringProp name="Header.value">document</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Mode</stringProp>
+            <stringProp name="Header.value">navigate</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-Site</stringProp>
+            <stringProp name="Header.value">none</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Sec-Fetch-User</stringProp>
+            <stringProp name="Header.value">?1</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Connection</stringProp>
+            <stringProp name="Header.value">keep-alive</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+
+      <!-- Cleared every iteration so each iteration is a fresh, un-tokened visitor. -->
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+        <collectionProp name="CookieManager.cookies"/>
+        <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+      </CookieManager>
+      <hashTree/>
+
+      <!-- Re-resolve each iteration so load spreads over every CDN edge IP
+           instead of pinning all threads to the first address resolved. -->
+      <DNSCacheManager guiclass="DNSCachePanel" testclass="DNSCacheManager" testname="DNS Cache Manager" enabled="true">
+        <collectionProp name="DNSCacheManager.servers"/>
+        <collectionProp name="DNSCacheManager.hosts"/>
+        <boolProp name="DNSCacheManager.clearEachIteration">true</boolProp>
+        <boolProp name="DNSCacheManager.isCustomResolver">false</boolProp>
+      </DNSCacheManager>
+      <hashTree/>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Stress Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">${__P(loops,-1)}</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,100)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,60)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay">0</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- calcMode 2 = pace against all active threads in this group, so the
+             rate is a whole-plan target, not per-thread. 3600/min = 60/s. -->
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Target Rate (req/min, all threads)" enabled="true">
+          <intProp name="calcMode">2</intProp>
+          <stringProp name="throughput">${__P(rpm,3600)}</stringProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET stress_test.jsp" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">${__P(path,/jsp/smartpass/tchinese/stress_test.jsp)}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <!-- Default false: never load Queue-it's edge from a capacity test. -->
+          <boolProp name="HTTPSampler.follow_redirects">${__P(follow,false)}</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.image_parser">false</boolProp>
+          <boolProp name="HTTPSampler.concurrentDwn">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status matches expected code" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="expectcode">${__P(expectcode,200)}</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message">Unexpected response code. 403 = generator IP not allowlisted on the WAF/CDN. 302 = stress_test.jsp is behind a Queue-it trigger (see plan header). 5xx = origin overloaded or erroring under load.</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <!-- Latency ceiling: 0 (default) = disabled. Set -Jmaxlatency=200 to
+               fail any sample slower than the p95 target in runbook 0.4. -->
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Latency ceiling (ms, 0=off)" enabled="true">
+            <stringProp name="DurationAssertion.duration">${__P(maxlatency,0)}</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
