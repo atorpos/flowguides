@@ -1,0 +1,34 @@
+{
+  "GET stress_test.jsp" : {
+    "transaction" : "GET stress_test.jsp",
+    "sampleCount" : 34884,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 142.13112028437067,
+    "medianResTime" : 105.0,
+    "minResTime" : 57.0,
+    "maxResTime" : 3903.0,
+    "pct1ResTime" : 199.0,
+    "pct2ResTime" : 282.9500000000007,
+    "pct3ResTime" : 1124.0,
+    "throughput" : 116.21453248003624,
+    "receivedKBytesPerSec" : 693.1306041346709,
+    "sentKBytesPerSec" : 63.7818039587699
+  },
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 34884,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 142.13112028437067,
+    "medianResTime" : 105.0,
+    "minResTime" : 57.0,
+    "maxResTime" : 3903.0,
+    "pct1ResTime" : 199.0,
+    "pct2ResTime" : 282.9500000000007,
+    "pct3ResTime" : 1124.0,
+    "throughput" : 116.21453248003624,
+    "receivedKBytesPerSec" : 693.1306041346709,
+    "sentKBytesPerSec" : 63.7818039587699
+  }
+}
