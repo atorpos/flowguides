@@ -115,26 +115,12 @@ vars.put('PORT', proto == 'http' ? '80' : '443')</stringProp>
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-        <!--
-          Skippable with -Jhittarget=false. This sampler is the only thing in the
-          plan that touches the customer's own site; every other request goes to
-          queue-it.net. While the target's WAF is blocking the generator, hitting
-          it once per iteration per thread adds thousands of requests that cannot
-          succeed and only risk the source IP being escalated further.
-        -->
         <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Hit Target Site">
           <stringProp name="IfController.condition">${__P(hittarget,true)}</stringProp>
           <boolProp name="IfController.evaluateAll">false</boolProp>
           <boolProp name="IfController.useExpression">true</boolProp>
         </IfController>
         <hashTree>
-          <!--
-            Hit the protected page to trigger the waiting room.
-            The domain field takes a HOST ONLY. Putting the whole URL here is what
-            produced "java.net.MalformedURLException: Illegal character found in
-            host: '/'" on every sample - host and path are separate fields.
-            These values override the queue-it.net HTTP Request Defaults above.
-          -->
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Target Site - Protected Page">
             <stringProp name="HTTPSampler.domain">${__P(targethost,order.smartone.com)}</stringProp>
             <stringProp name="HTTPSampler.path">${__P(targetpath,/jsp/smartpass/english/customer.jsp?tm=20260911_0859)}</stringProp>
@@ -151,8 +137,6 @@ vars.put('PORT', proto == 'http' ? '80' : '443')</stringProp>
             </elementProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <!-- Browser headers: the target site sits behind a WAF/CDN that 403s
-                 requests with no User-Agent and a non-HTML Accept. -->
             <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Browser Headers">
               <collectionProp name="HeaderManager.headers">
                 <elementProp name="" elementType="Header">
@@ -180,43 +164,6 @@ vars.put('PORT', proto == 'http' ? '80' : '443')</stringProp>
             <hashTree/>
           </hashTree>
         </hashTree>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
-          <boolProp name="ResultCollector.error_logging">false</boolProp>
-          <objProp>
-            <name>saveConfig</name>
-            <value class="SampleSaveConfiguration">
-              <time>true</time>
-              <latency>true</latency>
-              <timestamp>true</timestamp>
-              <success>true</success>
-              <label>true</label>
-              <code>true</code>
-              <message>true</message>
-              <threadName>true</threadName>
-              <dataType>true</dataType>
-              <encoding>false</encoding>
-              <assertions>true</assertions>
-              <subresults>true</subresults>
-              <responseData>false</responseData>
-              <samplerData>false</samplerData>
-              <xml>false</xml>
-              <fieldNames>true</fieldNames>
-              <responseHeaders>false</responseHeaders>
-              <requestHeaders>false</requestHeaders>
-              <responseDataOnError>false</responseDataOnError>
-              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-              <assertionsResultsToSave>0</assertionsResultsToSave>
-              <bytes>true</bytes>
-              <sentBytes>true</sentBytes>
-              <url>true</url>
-              <threadCounts>true</threadCounts>
-              <idleTime>true</idleTime>
-              <connectTime>true</connectTime>
-            </value>
-          </objProp>
-          <stringProp name="filename"></stringProp>
-        </ResultCollector>
-        <hashTree/>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="true"/>
         <hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Environment State" enabled="true">
@@ -553,13 +500,27 @@ vars.put('PORT', proto == 'http' ? '80' : '443')</stringProp>
               </hashTree>
             </hashTree>
           </hashTree>
-          <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Queue Redirect" enabled="false">
-            <boolProp name="displayJMeterProperties">true</boolProp>
-            <boolProp name="displayJMeterVariables">true</boolProp>
-            <boolProp name="displaySystemProperties">true</boolProp>
-          </DebugSampler>
-          <hashTree/>
+          
+          <!-- NEW: SAFE REDIRECT EXECUTION BLOCK -->
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Valid RedirectURL" enabled="true">
+            <stringProp name="IfController.condition">"${REDIRECTURL}".startsWith("http")</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">false</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Follow Queue Redirect" enabled="true">
+              <stringProp name="HTTPSampler.path">${REDIRECTURL}</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+          </hashTree>
+          <!-- END SAFE REDIRECT -->
+          
         </hashTree>
+        
+        <!-- Listeners left untouched, all disabled -->
         <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="false">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
